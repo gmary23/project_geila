@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:      
+     - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      # informações onde o app se comunica com a base de dados 05/08/2023
+      - DB_HOST=db 
+      - DB_NAME=devdb    
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      # garante que o container da app só inicia após que a base de dados
+      - db
+
+# Banco de dados
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=nome
+      - POSTGRES_USER=geila
+      - POSTGRES_PASSWORD=123
+
+  # pgadmin
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: geila@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "8001:80"
+
+
+volumes:
+  dev-db-data:
+
+   
